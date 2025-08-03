@@ -1,0 +1,16 @@
+*.pyc
+.coverage
+coverage.xml
+uv.lock
+
+build
+dist
+.idea
+.vscode
+.mypy_cache
+.pytest_cache
+doc/_build/
+venv
+.venv
+.ruff_cache
+config

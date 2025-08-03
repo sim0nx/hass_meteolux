@@ -1,0 +1,13 @@
+{
+  "domain": "hass_meteolux",
+  "name": "MeteoLux",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "",
+  "loggers": ["hass_meteolux"],
+  "requirements": ["python-meteolux~=0.0"],
+  "version": "0.0.1"
+}
