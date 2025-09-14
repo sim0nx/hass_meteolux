@@ -1,4 +1,5 @@
 """The MeteoLux integration."""
+
 from __future__ import annotations
 
 import dataclasses
@@ -11,7 +12,12 @@ from meteolux import AsyncMeteoLuxClient
 from meteolux.exceptions import MeteoLuxError
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform, CONF_LATITUDE, CONF_LONGITUDE, CONF_SCAN_INTERVAL
+from homeassistant.const import (
+    Platform,
+    CONF_LATITUDE,
+    CONF_LONGITUDE,
+    CONF_SCAN_INTERVAL,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -22,10 +28,11 @@ _LOGGER = logging.getLogger(__name__)
 DOMAIN = "hass_meteolux"
 
 # The platforms this integration supports.
-PLATFORMS: list[Platform] = [Platform.WEATHER]
+PLATFORMS: list[Platform] = [Platform.WEATHER, Platform.SENSOR]
 
 # The scan interval for the MeteoLux API
 SCAN_INTERVAL = timedelta(minutes=15)
+
 
 @dataclasses.dataclass
 class ObservationData:
@@ -81,11 +88,11 @@ class MeteoluxDataUpdateCoordinator(DataUpdateCoordinator):
             data_observation = await self.api_client.get_observations_hvd()
 
             for data in data_observation.data:
-                if data.id == 'sqnh':
+                if data.id == "sqnh":
                     self.data_observation.pressure = data.value
-                elif data.id == 'su':
+                elif data.id == "su":
                     self.data_observation.humidity = data.value
-                elif data.id == 'svv':
+                elif data.id == "svv":
                     if data.value == 9999:
                         self.data_observation.visibility = 10000
                     else:

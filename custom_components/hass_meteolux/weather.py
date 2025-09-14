@@ -1,22 +1,25 @@
 """Weather platform for the MeteoLux integration."""
+
 from __future__ import annotations
 
 import datetime
 import logging
 import typing
-from typing import Any
 
-from meteolux import AsyncMeteoLuxClient
 from homeassistant.components.weather import (
     Forecast,
     WeatherEntity,
-    WeatherEntityFeature, ATTR_FORECAST_TIME, ATTR_FORECAST_CONDITION, ATTR_FORECAST_NATIVE_TEMP,
-    ATTR_FORECAST_NATIVE_PRECIPITATION, ATTR_FORECAST_NATIVE_WIND_SPEED, ATTR_FORECAST_WIND_BEARING,
+    WeatherEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
-from homeassistant.const import UnitOfTemperature, CONF_NAME, UnitOfPrecipitationDepth, UnitOfPressure, UnitOfSpeed, \
-    UnitOfLength
+from homeassistant.const import (
+    UnitOfTemperature,
+    UnitOfPrecipitationDepth,
+    UnitOfPressure,
+    UnitOfSpeed,
+    UnitOfLength,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -28,12 +31,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-        hass: HomeAssistant,
-        config_entry: ConfigEntry,
-        async_add_entities: AddEntitiesCallback,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the MeteoLux weather platform."""
-    coordinator: MeteoluxDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator: MeteoluxDataUpdateCoordinator = hass.data[DOMAIN][
+        config_entry.entry_id
+    ]
     async_add_entities([MeteoluxWeather(coordinator, config_entry)])
 
 
@@ -47,14 +52,20 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
     _attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
     _attr_native_visibility_unit = UnitOfLength.KILOMETERS
     _attr_has_entity_name = True
-    _attr_supported_features = (WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY)
+    _attr_supported_features = (
+        WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY
+    )
 
-    def __init__(self, coordinator: MeteoluxDataUpdateCoordinator, config_entry: ConfigEntry) -> None:
+    def __init__(
+        self, coordinator: MeteoluxDataUpdateCoordinator, config_entry: ConfigEntry
+    ) -> None:
         """Initialize the MeteoLux weather entity."""
         super().__init__(coordinator)
         self.config_entry = config_entry
         self._city_name = self.coordinator.data.city.name
-        self._attr_unique_id = f"{self.coordinator.data.city.lat},{self.coordinator.data.city.lat}"
+        self._attr_unique_id = (
+            f"{self.coordinator.data.city.lat},{self.coordinator.data.city.long}"
+        )
 
         self.forecat_hourly: list[Forecast] | None = None
         self.forecat_daily: list[Forecast] | None = None
@@ -91,7 +102,9 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
         if not self.coordinator.data:
             return None
 
-        return self._get_temperature(self.coordinator.data.forecast.current.temperature.temperature)
+        return self._get_temperature(
+            self.coordinator.data.forecast.current.temperature.temperature
+        )
 
     @staticmethod
     def _get_temperature(temperature: int | list[int]) -> float | None:
@@ -103,7 +116,9 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
         try:
             return float(temp)
         except (ValueError, TypeError):
-            _LOGGER.warning("Could not parse temperature from API response: %s", temperature)
+            _LOGGER.warning(
+                "Could not parse temperature from API response: %s", temperature
+            )
             return None
 
     @property
@@ -124,8 +139,8 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
     @staticmethod
     def _get_wind_speed(wind_speed: str) -> float:
         """Return the wind speed."""
-        if '-' in wind_speed:
-            return float(wind_speed.split('-')[1])
+        if "-" in wind_speed:
+            return float(wind_speed.split("-")[1])
 
         return float(wind_speed)
 
@@ -155,15 +170,17 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
         if precipitation is None or not precipitation:
             return None
 
-        if '-' in precipitation:
-            max_precipitation = float(precipitation.split('-')[1])
+        if "-" in precipitation:
+            max_precipitation = float(precipitation.split("-")[1])
         else:
             max_precipitation = float(precipitation)
 
         return max_precipitation
 
     @staticmethod
-    def _get_precipitation_rain_snow(rain: str | None, snow: str | None) -> float | None:
+    def _get_precipitation_rain_snow(
+        rain: str | None, snow: str | None
+    ) -> float | None:
         """If either snow or rain is set, return whatever parsed value."""
         if (rain is None and snow is None) or not (rain or snow):
             return 0.0
@@ -179,12 +196,14 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
 
         return None
 
-    def _forecast(self, mode: typing.Literal['hourly', 'daily']) -> list[Forecast] | None:
+    def _forecast(
+        self, mode: typing.Literal["hourly", "daily"]
+    ) -> list[Forecast] | None:
         """Return the forecast data."""
         forecast_data: list[Forecast] = []
         today = datetime.datetime.now(tz=datetime.UTC)
 
-        if mode == 'hourly':
+        if mode == "hourly":
             for hfc in self.coordinator.data.forecast.hourly:
                 fc_dt = hfc.date.replace(tzinfo=datetime.UTC)
 
@@ -196,8 +215,12 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
                     Forecast(
                         datetime=fc_dt.isoformat(),
                         condition=CONDITION_MAP.get(hfc.icon.id, None),
-                        native_temperature=self._get_temperature(hfc.temperature.temperature),
-                        native_precipitation=self._get_precipitation_rain_snow(rain=hfc.rain, snow=hfc.snow),
+                        native_temperature=self._get_temperature(
+                            hfc.temperature.temperature
+                        ),
+                        native_precipitation=self._get_precipitation_rain_snow(
+                            rain=hfc.rain, snow=hfc.snow
+                        ),
                         native_wind_speed=self._get_wind_speed(hfc.wind.speed),
                         wind_bearing=hfc.wind.direction,
                     )
@@ -215,10 +238,16 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
                     Forecast(
                         datetime=fc_dt.isoformat(),
                         condition=CONDITION_MAP.get(dfc.icon.id, None),
-                        native_temperature=self._get_temperature(dfc.temperature_max.temperature),
-                        native_templow=self._get_temperature(dfc.temperature_min.temperature),
+                        native_temperature=self._get_temperature(
+                            dfc.temperature_max.temperature
+                        ),
+                        native_templow=self._get_temperature(
+                            dfc.temperature_min.temperature
+                        ),
                         uv_index=dfc.uv_index,
-                        native_precipitation=self._get_precipitation_rain_snow(rain=dfc.rain, snow=dfc.snow),
+                        native_precipitation=self._get_precipitation_rain_snow(
+                            rain=dfc.rain, snow=dfc.snow
+                        ),
                     )
                 )
 
@@ -226,8 +255,8 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
 
     async def async_forecast_daily(self) -> list[Forecast]:
         """Return the daily forecast in native units."""
-        return self._forecast('daily')
+        return self._forecast("daily")
 
     async def async_forecast_hourly(self) -> list[Forecast]:
         """Return the hourly forecast in native units."""
-        return self._forecast('hourly')
+        return self._forecast("hourly")
