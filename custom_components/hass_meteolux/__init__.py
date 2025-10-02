@@ -6,22 +6,22 @@ import dataclasses
 from datetime import timedelta
 import logging
 from typing import Any
-import homeassistant.helpers.httpx_client
-import meteolux.models
+
 from meteolux import AsyncMeteoLuxClient
 from meteolux.exceptions import MeteoLuxError
+import meteolux.models
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    Platform,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_SCAN_INTERVAL,
+    Platform,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+import homeassistant.helpers.httpx_client
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-
 
 _LOGGER = logging.getLogger(__name__)
 

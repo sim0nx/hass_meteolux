@@ -10,9 +10,9 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
+import homeassistant.helpers.httpx_client
 
 from .const import DOMAIN
-import homeassistant.helpers.httpx_client
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,8 +38,8 @@ class MeteoluxConfigFlow(ConfigFlow, domain=DOMAIN):
 
             places_for_form: dict[str, str] = {}
             for city in cities.cities:
-                citiy_key = f"{city.id};{city.name};{city.lat};{city.long}"
-                places_for_form[citiy_key] = city.name
+                city_key = f"{city.id};{city.name};{city.lat};{city.long}"
+                places_for_form[city_key] = city.name
 
             return self.async_show_form(
                 step_id="user",

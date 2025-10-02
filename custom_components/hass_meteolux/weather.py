@@ -12,20 +12,20 @@ from homeassistant.components.weather import (
     WeatherEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.const import (
-    UnitOfTemperature,
+    UnitOfLength,
     UnitOfPrecipitationDepth,
     UnitOfPressure,
     UnitOfSpeed,
-    UnitOfLength,
+    UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, MANUFACTURER, MODEL, CONDITION_MAP
 from . import MeteoluxDataUpdateCoordinator
+from .const import CONDITION_MAP, DOMAIN, MANUFACTURER, MODEL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -204,6 +204,24 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
         today = datetime.datetime.now(tz=datetime.UTC)
 
         if mode == "hourly":
+            hfc = self.coordinator.data.forecast.current
+            fc_dt = hfc.date.replace(tzinfo=datetime.UTC)
+
+            forecast_data.append(
+                Forecast(
+                    datetime=fc_dt.isoformat(),
+                    condition=CONDITION_MAP.get(hfc.icon.id, None),
+                    native_temperature=self._get_temperature(
+                        hfc.temperature.temperature
+                    ),
+                    native_precipitation=self._get_precipitation_rain_snow(
+                        rain=hfc.rain, snow=hfc.snow
+                    ),
+                    native_wind_speed=self._get_wind_speed(hfc.wind.speed),
+                    wind_bearing=hfc.wind.direction,
+                )
+            )
+
             for hfc in self.coordinator.data.forecast.hourly:
                 fc_dt = hfc.date.replace(tzinfo=datetime.UTC)
 
@@ -227,6 +245,24 @@ class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherE
                 )
 
         else:
+            dfc = self.coordinator.data.forecast.current
+            fc_dt = dfc.date.replace(tzinfo=datetime.UTC)
+
+            forecast_data.append(
+                Forecast(
+                    datetime=fc_dt.isoformat(),
+                    condition=CONDITION_MAP.get(dfc.icon.id, None),
+                    native_temperature=self._get_temperature(
+                        dfc.temperature.temperature
+                    ),
+                    native_precipitation=self._get_precipitation_rain_snow(
+                        rain=dfc.rain, snow=dfc.snow
+                    ),
+                    wind_bearing=dfc.wind.direction,
+                    native_wind_speed=self._get_wind_speed(dfc.wind.speed),
+                )
+            )
+
             for dfc in self.coordinator.data.forecast.daily:
                 fc_dt = dfc.date.replace(tzinfo=datetime.UTC)
 
