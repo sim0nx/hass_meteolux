@@ -24,7 +24,7 @@ MANUFACTURER = "Administration de la navigation aérienne"
 # Inspired by meteo_france integration
 CONDITION_CLASSES: dict[str, list[int]] = {
     ATTR_CONDITION_CLEAR_NIGHT: [0, 6, 7, 11, 16, 46],
-    ATTR_CONDITION_CLOUDY: [4, 5, 10],
+    ATTR_CONDITION_CLOUDY: [4, 5, 10, 12],
     ATTR_CONDITION_FOG: [14, 15],
     ATTR_CONDITION_HAIL: [28, 29, 35, 41],
     ATTR_CONDITION_LIGHTNING: [42, 47, 53, 57],
