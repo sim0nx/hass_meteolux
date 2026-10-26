@@ -8,6 +8,8 @@ from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 from meteolux.models import Bookmarks, ObservationResponse, WeatherResponse
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.syrupy import HomeAssistantSnapshotExtension
+from syrupy.assertion import SnapshotAssertion
 
 from custom_components.hass_meteolux.const import CONF_CITY_ID, DOMAIN
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
@@ -30,6 +32,12 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
 async def set_tz(hass: HomeAssistant) -> None:
     """Use the Luxembourg time zone."""
     await hass.config.async_set_time_zone("Europe/Luxembourg")
+
+
+@pytest.fixture
+def snapshot(snapshot: SnapshotAssertion) -> SnapshotAssertion:
+    """Use the Home Assistant extension regardless of plugin load order."""
+    return snapshot.use_extension(HomeAssistantSnapshotExtension)
 
 
 @pytest.fixture

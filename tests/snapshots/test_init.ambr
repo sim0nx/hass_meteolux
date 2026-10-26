@@ -69,5 +69,30 @@
   })
 # ---
 # name: test_weather_state
-  <state weather.mamer=rainy; temperature=9.0, apparent_temperature=6.0, temperature_unit=°C, humidity=88, pressure=1015.8, pressure_unit=hPa, wind_bearing=225, wind_gust_speed=50.0, wind_speed=30.0, wind_speed_unit=km/h, visibility=10.0, visibility_unit=km, precipitation_unit=mm, attribution=Data provided by MeteoLux (Administration de la navigation aérienne), friendly_name=Mamer, supported_features=3 @ 2026-10-26T13:30:00+01:00>
+  StateSnapshot({
+    'attributes': ReadOnlyDict({
+      <WeatherEntityStateAttribute.APPARENT_TEMPERATURE: 'apparent_temperature'>: 6.0,
+      <EntityStateAttribute.ATTRIBUTION: 'attribution'>: 'Data provided by MeteoLux (Administration de la navigation aérienne)',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Mamer',
+      <WeatherEntityStateAttribute.HUMIDITY: 'humidity'>: 88,
+      <WeatherEntityStateAttribute.PRECIPITATION_UNIT: 'precipitation_unit'>: <UnitOfPrecipitationDepth.MILLIMETERS: 'mm'>,
+      <WeatherEntityStateAttribute.PRESSURE: 'pressure'>: 1015.8,
+      <WeatherEntityStateAttribute.PRESSURE_UNIT: 'pressure_unit'>: <UnitOfPressure.HPA: 'hPa'>,
+      <EntityStateAttribute.SUPPORTED_FEATURES: 'supported_features'>: <WeatherEntityFeature: 3>,
+      <WeatherEntityStateAttribute.TEMPERATURE: 'temperature'>: 9.0,
+      <WeatherEntityStateAttribute.TEMPERATURE_UNIT: 'temperature_unit'>: <UnitOfTemperature.CELSIUS: '°C'>,
+      <WeatherEntityStateAttribute.VISIBILITY: 'visibility'>: 10.0,
+      <WeatherEntityStateAttribute.VISIBILITY_UNIT: 'visibility_unit'>: <UnitOfLength.KILOMETERS: 'km'>,
+      <WeatherEntityStateAttribute.WIND_BEARING: 'wind_bearing'>: 225,
+      <WeatherEntityStateAttribute.WIND_GUST_SPEED: 'wind_gust_speed'>: 50.0,
+      <WeatherEntityStateAttribute.WIND_SPEED: 'wind_speed'>: 30.0,
+      <WeatherEntityStateAttribute.WIND_SPEED_UNIT: 'wind_speed_unit'>: <UnitOfSpeed.KILOMETERS_PER_HOUR: 'km/h'>,
+    }),
+    'context': <ANY>,
+    'entity_id': 'weather.mamer',
+    'last_changed': <ANY>,
+    'last_reported': <ANY>,
+    'last_updated': <ANY>,
+    'state': 'rainy',
+  })
 # ---
