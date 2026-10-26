@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Choose the place to show the MeteoLux forecast for.",
+        "data": {
+          "city": "Place"
+        },
+        "data_description": {
+          "city": "One of the places MeteoLux publishes forecasts for."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This place is already configured.",
+      "cannot_connect": "Failed to connect to the MeteoLux API."
+    }
+  }
+}

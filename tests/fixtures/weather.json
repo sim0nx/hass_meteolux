@@ -1,0 +1,282 @@
+{
+  "city": {
+    "id": 457,
+    "name": "Mamer",
+    "region": "S",
+    "canton": "Capellen",
+    "domain": "villes",
+    "lat": 49.628424,
+    "long": 6.025544
+  },
+  "forecast": {
+    "current": {
+      "date": "2026-10-26T13:12:00",
+      "icon": {
+        "id": 30,
+        "name": "Light rain shower"
+      },
+      "wind": {
+        "direction": "SO",
+        "speed": "20-30",
+        "gusts": "40-50"
+      },
+      "rain": "0-1",
+      "snow": "0",
+      "type": "current",
+      "temperature": {
+        "temperature": 9,
+        "humidex": null,
+        "felt": 6
+      }
+    },
+    "hourly": [
+      {
+        "date": "2026-10-26T06:00:00",
+        "icon": {
+          "id": 22,
+          "name": "Moderate rain"
+        },
+        "wind": {
+          "direction": "S",
+          "speed": "10-20",
+          "gusts": null
+        },
+        "rain": "7-9",
+        "snow": 0,
+        "type": "hourly",
+        "temperature": {
+          "temperature": [
+            5,
+            7
+          ],
+          "humidex": null,
+          "felt": null
+        }
+      },
+      {
+        "date": "2026-10-26T12:00:00",
+        "icon": {
+          "id": 30,
+          "name": "Light rain shower"
+        },
+        "wind": {
+          "direction": "SO",
+          "speed": "20-30",
+          "gusts": "40-50"
+        },
+        "rain": "1-2",
+        "snow": 0,
+        "type": "hourly",
+        "temperature": {
+          "temperature": [
+            11,
+            13
+          ],
+          "humidex": null,
+          "felt": null
+        }
+      },
+      {
+        "date": "2026-10-26T18:00:00",
+        "icon": {
+          "id": 7,
+          "name": "Clear sky"
+        },
+        "wind": {
+          "direction": "O",
+          "speed": "05-10",
+          "gusts": null
+        },
+        "rain": 0,
+        "snow": 0,
+        "type": "hourly",
+        "temperature": {
+          "temperature": [
+            8,
+            10
+          ],
+          "humidex": null,
+          "felt": null
+        }
+      },
+      {
+        "date": "2026-10-27T00:00:00",
+        "icon": {
+          "id": 25,
+          "name": "Light snowfall"
+        },
+        "wind": {
+          "direction": "NO",
+          "speed": "05-10",
+          "gusts": null
+        },
+        "rain": "0",
+        "snow": "1-3",
+        "type": "hourly",
+        "temperature": {
+          "temperature": [
+            0,
+            2
+          ],
+          "humidex": null,
+          "felt": null
+        }
+      }
+    ],
+    "daily": [
+      {
+        "date": "2026-10-25T00:00:00",
+        "icon": {
+          "id": 22,
+          "name": "Moderate rain"
+        },
+        "wind": {
+          "direction": "S",
+          "speed": "20-30",
+          "gusts": null
+        },
+        "rain": "7-9",
+        "snow": "0",
+        "type": "daily",
+        "temperatureMin": {
+          "temperature": 8,
+          "humidex": null,
+          "felt": null
+        },
+        "temperatureMax": {
+          "temperature": 12,
+          "humidex": null,
+          "felt": null
+        },
+        "sunshine": 0,
+        "uvIndex": 1
+      },
+      {
+        "date": "2026-10-26T00:00:00",
+        "icon": {
+          "id": 30,
+          "name": "Light rain shower"
+        },
+        "wind": {
+          "direction": "",
+          "speed": "10-20",
+          "gusts": null
+        },
+        "rain": "1-2",
+        "snow": "0",
+        "type": "daily",
+        "temperatureMin": {
+          "temperature": 5,
+          "humidex": null,
+          "felt": 4
+        },
+        "temperatureMax": {
+          "temperature": 13,
+          "humidex": null,
+          "felt": null
+        },
+        "sunshine": 2,
+        "uvIndex": 2
+      },
+      {
+        "date": "2026-10-27T00:00:00",
+        "icon": {
+          "id": 3,
+          "name": "Partly cloudy"
+        },
+        "wind": {
+          "direction": "NE",
+          "speed": "05-10",
+          "gusts": null
+        },
+        "rain": "0",
+        "snow": "0",
+        "type": "daily",
+        "temperatureMin": {
+          "temperature": 3,
+          "humidex": null,
+          "felt": null
+        },
+        "temperatureMax": {
+          "temperature": 14,
+          "humidex": null,
+          "felt": null
+        },
+        "sunshine": 6,
+        "uvIndex": 2
+      }
+    ]
+  },
+  "vigilances": [],
+  "roadStatus": [
+    {
+      "date": "2026-10-25",
+      "description": "Risk of obstacles on roads due to strong wind gusts"
+    }
+  ],
+  "ephemeris": {
+    "date": "2026-10-25",
+    "sunrise": "07:14",
+    "sunset": "17:25",
+    "moonrise": "16:40",
+    "moonset": "06:18",
+    "sunshine": 4,
+    "moonIcon": {
+      "id": "I",
+      "name": "Full Moon"
+    },
+    "uvIndex": 2
+  },
+  "radar": {
+    "realTime": [
+      {
+        "date": "2026-10-25T22:49:00Z",
+        "provider": "rmib",
+        "url": "https://metapi.ana.lu/api/v1/metapp/image/rmib_app_202610252249.jpeg"
+      }
+    ],
+    "forecast": [
+      {
+        "date": "2026-10-26T00:10:00Z",
+        "provider": "dwd",
+        "url": "https://metapi.ana.lu/api/v1/metapp/image/dwd_fx_app_202610260010.jpeg"
+      }
+    ]
+  },
+  "satellite": {
+    "infrared": [
+      {
+        "date": "2026-10-25T22:00:00Z",
+        "provider": "eumetsat",
+        "url": "https://metapi.ana.lu/api/v1/metapp/image/app_sat_ir_202610252200.png"
+      }
+    ],
+    "visual": [
+      {
+        "date": "2026-10-25T22:00:00Z",
+        "provider": "eumetsat",
+        "url": "https://metapi.ana.lu/api/v1/metapp/image/app_sat_vis_202610252200.png"
+      }
+    ]
+  },
+  "data": {
+    "history": [
+      {
+        "date": "2026-10-20T00:00:00",
+        "minTemp": 6.6,
+        "maxTemp": 7.4,
+        "precipitation": 0.0,
+        "meanTemp": 6.9,
+        "sunshine": 0.0
+      }
+    ],
+    "forecast": [
+      {
+        "date": "2026-10-26",
+        "minTemp": 6.0,
+        "maxTemp": 12.0,
+        "precipitation": 1.5
+      }
+    ]
+  }
+}

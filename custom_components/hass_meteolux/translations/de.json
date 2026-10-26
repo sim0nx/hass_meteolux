@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Wählen Sie den Ort, für den die MeteoLux-Vorhersage angezeigt werden soll.",
+        "data": {
+          "city": "Ort"
+        },
+        "data_description": {
+          "city": "Einer der Orte, für die MeteoLux Vorhersagen veröffentlicht."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Dieser Ort ist bereits eingerichtet.",
+      "cannot_connect": "Verbindung zur MeteoLux-API fehlgeschlagen."
+    }
+  }
+}

@@ -1,17 +1,12 @@
 """Weather platform for the MeteoLux integration."""
 
-from __future__ import annotations
-
-import datetime
-import logging
-import typing
+from meteolux.models import CurrentWeather, DailyWeather, HourlyWeather
 
 from homeassistant.components.weather import (
     Forecast,
-    WeatherEntity,
+    SingleCoordinatorWeatherEntity,
     WeatherEntityFeature,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     UnitOfLength,
     UnitOfPrecipitationDepth,
@@ -19,280 +14,146 @@ from homeassistant.const import (
     UnitOfSpeed,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 
-from . import MeteoluxDataUpdateCoordinator
-from .const import CONDITION_MAP, DOMAIN, MANUFACTURER, MODEL
+from .const import ATTRIBUTION, CONDITION_MAP
+from .coordinator import MeteoluxConfigEntry, MeteoluxDataUpdateCoordinator
+from .entity import base_unique_id, device_info
+from .parsing import (
+    localize,
+    parse_precipitation,
+    parse_range,
+    parse_temperature,
+    parse_wind_bearing,
+)
 
-_LOGGER = logging.getLogger(__name__)
+# The coordinator handles all updates.
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    entry: MeteoluxConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the MeteoLux weather platform."""
-    coordinator: MeteoluxDataUpdateCoordinator = hass.data[DOMAIN][
-        config_entry.entry_id
-    ]
-    async_add_entities([MeteoluxWeather(coordinator, config_entry)])
+    async_add_entities([MeteoluxWeather(entry.runtime_data)])
 
 
-class MeteoluxWeather(CoordinatorEntity[MeteoluxDataUpdateCoordinator], WeatherEntity):
-    """Representation of a weather entity from MeteoLux."""
+class MeteoluxWeather(SingleCoordinatorWeatherEntity[MeteoluxDataUpdateCoordinator]):
+    """Weather forecast for a MeteoLux place."""
 
-    _attr_attribution = "Data provided by MeteoLux"
+    _attr_attribution = ATTRIBUTION
+    _attr_has_entity_name = True
+    _attr_name = None
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_native_precipitation_unit = UnitOfPrecipitationDepth.MILLIMETERS
     _attr_native_pressure_unit = UnitOfPressure.HPA
     _attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
     _attr_native_visibility_unit = UnitOfLength.KILOMETERS
-    _attr_has_entity_name = True
     _attr_supported_features = (
         WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY
     )
 
-    def __init__(
-        self, coordinator: MeteoluxDataUpdateCoordinator, config_entry: ConfigEntry
-    ) -> None:
-        """Initialize the MeteoLux weather entity."""
+    def __init__(self, coordinator: MeteoluxDataUpdateCoordinator) -> None:
+        """Initialize the weather entity."""
         super().__init__(coordinator)
-        self.config_entry = config_entry
-        self._city_name = self.coordinator.data.city.name
-        self._attr_unique_id = (
-            f"{self.coordinator.data.city.lat},{self.coordinator.data.city.long}"
-        )
-
-        self.forecat_hourly: list[Forecast] | None = None
-        self.forecat_daily: list[Forecast] | None = None
+        self._attr_unique_id = base_unique_id(coordinator)
+        self._attr_device_info = device_info(coordinator)
 
     @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._city_name
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return the device info."""
-        assert self.platform.config_entry and self.platform.config_entry.unique_id
-        return DeviceInfo(
-            entry_type=DeviceEntryType.SERVICE,
-            identifiers={(DOMAIN, self.platform.config_entry.unique_id)},
-            manufacturer=MANUFACTURER,
-            model=MODEL,
-            name=self.coordinator.name,
-        )
+    def _current(self) -> CurrentWeather:
+        return self.coordinator.data.weather.forecast.current
 
     @property
     def condition(self) -> str | None:
         """Return the current condition."""
-        if not self.coordinator.data:
-            return None
-
-        weather_icon_id = self.coordinator.data.forecast.current.icon.id
-        return CONDITION_MAP.get(weather_icon_id, None)
+        return CONDITION_MAP.get(self._current.icon.id)
 
     @property
     def native_temperature(self) -> float | None:
         """Return the temperature."""
-        if not self.coordinator.data:
-            return None
+        return parse_temperature(self._current.temperature.temperature)
 
-        return self._get_temperature(
-            self.coordinator.data.forecast.current.temperature.temperature
+    @property
+    def native_apparent_temperature(self) -> float | None:
+        """Return the apparent temperature."""
+        felt = self._current.temperature.felt
+        return float(felt) if felt is not None else None
+
+    @property
+    def native_pressure(self) -> float | None:
+        """Return the pressure."""
+        return self.coordinator.data.observation.pressure
+
+    @property
+    def humidity(self) -> float | None:
+        """Return the humidity."""
+        return self.coordinator.data.observation.humidity
+
+    @property
+    def native_visibility(self) -> float | None:
+        """Return the visibility."""
+        return self.coordinator.data.observation.visibility_km
+
+    @property
+    def native_wind_speed(self) -> float | None:
+        """Return the wind speed."""
+        return parse_range(self._current.wind.speed)
+
+    @property
+    def native_wind_gust_speed(self) -> float | None:
+        """Return the wind gust speed."""
+        return parse_range(self._current.wind.gusts)
+
+    @property
+    def wind_bearing(self) -> float | None:
+        """Return the wind bearing."""
+        return parse_wind_bearing(self._current.wind.direction)
+
+    def _forecast_entry(self, entry: HourlyWeather | DailyWeather) -> Forecast:
+        return Forecast(
+            datetime=localize(entry.date, self.coordinator.time_zone).isoformat(),
+            condition=CONDITION_MAP.get(entry.icon.id),
+            native_precipitation=parse_precipitation(entry.rain, entry.snow),
+            native_wind_speed=parse_range(entry.wind.speed),
+            native_wind_gust_speed=parse_range(entry.wind.gusts),
+            wind_bearing=parse_wind_bearing(entry.wind.direction),
         )
 
-    @staticmethod
-    def _get_temperature(temperature: int | list[int]) -> float | None:
-        if isinstance(temperature, list):
-            temp = temperature[1]
-        else:
-            temp = temperature
-
-        try:
-            return float(temp)
-        except (ValueError, TypeError):
-            _LOGGER.warning(
-                "Could not parse temperature from API response: %s", temperature
-            )
-            return None
-
-    @property
-    def native_pressure(self):
-        """Return the pressure."""
-        return self.coordinator.data_observation.pressure
-
-    @property
-    def humidity(self):
-        """Return the humidity."""
-        return self.coordinator.data_observation.humidity
-
-    @property
-    def native_wind_speed(self):
-        """Return the wind speed."""
-        return self._get_wind_speed(self.coordinator.data.forecast.current.wind.speed)
-
-    @staticmethod
-    def _get_wind_speed(wind_speed: str) -> float:
-        """Return the wind speed."""
-        if "-" in wind_speed:
-            return float(wind_speed.split("-")[1])
-
-        return float(wind_speed)
-
-    @property
-    def native_wind_gust_speed(self):
-        """Return the wind gust speed."""
-        wind_gusts = self.coordinator.data.forecast.current.wind.gusts
-
-        if wind_gusts is not None:
-            return float(wind_gusts)
-
-        return None
-
-    @property
-    def native_visibility(self):
-        """Return the visibility."""
-        return self.coordinator.data_observation.visibility
-
-    @property
-    def wind_bearing(self):
-        """Return the wind bearing."""
-        return self.coordinator.data.forecast.current.wind.direction
-
-    @staticmethod
-    def _get_precipitation(precipitation: str | None) -> float | None:
-        """Precipitation can contain a range; this function returns the maximum value."""
-        if precipitation is None or not precipitation:
-            return None
-
-        if "-" in precipitation:
-            max_precipitation = float(precipitation.split("-")[1])
-        else:
-            max_precipitation = float(precipitation)
-
-        return max_precipitation
-
-    @staticmethod
-    def _get_precipitation_rain_snow(
-        rain: str | None, snow: str | None
-    ) -> float | None:
-        """If either snow or rain is set, return whatever parsed value."""
-        if (rain is None and snow is None) or not (rain or snow):
-            return 0.0
-
-        max_rain = MeteoluxWeather._get_precipitation(rain)
-        max_snow = MeteoluxWeather._get_precipitation(snow)
-
-        if max_rain is not None:
-            return max_rain
-
-        if max_snow is not None:
-            return max_snow
-
-        return None
-
-    def _forecast(
-        self, mode: typing.Literal["hourly", "daily"]
-    ) -> list[Forecast] | None:
-        """Return the forecast data."""
-        forecast_data: list[Forecast] = []
-        today = datetime.datetime.now(tz=datetime.UTC)
-
-        if mode == "hourly":
-            hfc = self.coordinator.data.forecast.current
-            fc_dt = hfc.date.replace(tzinfo=datetime.UTC)
-
-            forecast_data.append(
-                Forecast(
-                    datetime=fc_dt.isoformat(),
-                    condition=CONDITION_MAP.get(hfc.icon.id, None),
-                    native_temperature=self._get_temperature(
-                        hfc.temperature.temperature
-                    ),
-                    native_precipitation=self._get_precipitation_rain_snow(
-                        rain=hfc.rain, snow=hfc.snow
-                    ),
-                    native_wind_speed=self._get_wind_speed(hfc.wind.speed),
-                    wind_bearing=hfc.wind.direction,
+    @callback
+    def _async_forecast_hourly(self) -> list[Forecast]:
+        """Return the hourly forecast, starting with the period in progress."""
+        entries = self.coordinator.data.weather.forecast.hourly
+        time_zone = self.coordinator.time_zone
+        now = dt_util.now()
+        forecast: list[Forecast] = []
+        # Each entry lasts until the next one starts.
+        for entry, next_entry in zip(entries, [*entries[1:], None], strict=True):
+            if next_entry and localize(next_entry.date, time_zone) <= now:
+                continue
+            forecast.append(
+                self._forecast_entry(entry)
+                | Forecast(
+                    native_temperature=parse_temperature(entry.temperature.temperature)
                 )
             )
+        return forecast
 
-            for hfc in self.coordinator.data.forecast.hourly:
-                fc_dt = hfc.date.replace(tzinfo=datetime.UTC)
-
-                if fc_dt < today:
-                    # ignore past data
-                    continue
-
-                forecast_data.append(
-                    Forecast(
-                        datetime=fc_dt.isoformat(),
-                        condition=CONDITION_MAP.get(hfc.icon.id, None),
-                        native_temperature=self._get_temperature(
-                            hfc.temperature.temperature
-                        ),
-                        native_precipitation=self._get_precipitation_rain_snow(
-                            rain=hfc.rain, snow=hfc.snow
-                        ),
-                        native_wind_speed=self._get_wind_speed(hfc.wind.speed),
-                        wind_bearing=hfc.wind.direction,
-                    )
-                )
-
-        else:
-            dfc = self.coordinator.data.forecast.current
-            fc_dt = dfc.date.replace(tzinfo=datetime.UTC)
-
-            forecast_data.append(
-                Forecast(
-                    datetime=fc_dt.isoformat(),
-                    condition=CONDITION_MAP.get(dfc.icon.id, None),
-                    native_temperature=self._get_temperature(
-                        dfc.temperature.temperature
-                    ),
-                    native_precipitation=self._get_precipitation_rain_snow(
-                        rain=dfc.rain, snow=dfc.snow
-                    ),
-                    wind_bearing=dfc.wind.direction,
-                    native_wind_speed=self._get_wind_speed(dfc.wind.speed),
-                )
+    @callback
+    def _async_forecast_daily(self) -> list[Forecast]:
+        """Return the daily forecast, starting today."""
+        time_zone = self.coordinator.time_zone
+        today = dt_util.now(time_zone).date()
+        return [
+            self._forecast_entry(entry)
+            | Forecast(
+                native_temperature=parse_temperature(entry.temperature_max.temperature),
+                native_templow=parse_temperature(entry.temperature_min.temperature),
+                uv_index=entry.uv_index,
             )
-
-            for dfc in self.coordinator.data.forecast.daily:
-                fc_dt = dfc.date.replace(tzinfo=datetime.UTC)
-
-                if fc_dt < today:
-                    # ignore past data
-                    continue
-
-                forecast_data.append(
-                    Forecast(
-                        datetime=fc_dt.isoformat(),
-                        condition=CONDITION_MAP.get(dfc.icon.id, None),
-                        native_temperature=self._get_temperature(
-                            dfc.temperature_max.temperature
-                        ),
-                        native_templow=self._get_temperature(
-                            dfc.temperature_min.temperature
-                        ),
-                        uv_index=dfc.uv_index,
-                        native_precipitation=self._get_precipitation_rain_snow(
-                            rain=dfc.rain, snow=dfc.snow
-                        ),
-                    )
-                )
-
-        return forecast_data
-
-    async def async_forecast_daily(self) -> list[Forecast]:
-        """Return the daily forecast in native units."""
-        return self._forecast("daily")
-
-    async def async_forecast_hourly(self) -> list[Forecast]:
-        """Return the hourly forecast in native units."""
-        return self._forecast("hourly")
+            for entry in self.coordinator.data.weather.forecast.daily
+            if localize(entry.date, time_zone).date() >= today
+        ]

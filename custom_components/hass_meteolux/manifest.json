@@ -1,13 +1,14 @@
 {
   "domain": "hass_meteolux",
   "name": "MeteoLux",
-  "codeowners": [],
+  "codeowners": ["@sim0nx"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "",
+  "documentation": "https://github.com/sim0nx/hass_meteolux",
+  "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "",
-  "loggers": ["hass_meteolux"],
-  "requirements": ["python-meteolux>=0.1.4,<1.0.0"],
-  "version": "0.1.1"
+  "issue_tracker": "https://github.com/sim0nx/hass_meteolux/issues",
+  "loggers": ["meteolux"],
+  "requirements": ["python-meteolux~=0.1"],
+  "version": "0.2.0"
 }

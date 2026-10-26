@@ -1,0 +1,47 @@
+{
+  "cities": [
+    {
+      "id": 433,
+      "name": "Ettelbruck",
+      "region": "N",
+      "canton": "Diekirch",
+      "domain": "villes",
+      "lat": 49.84983,
+      "long": 6.105571,
+      "temperature": 9.0,
+      "icon": {
+        "id": 5,
+        "name": "Overcast"
+      }
+    },
+    {
+      "id": 456,
+      "name": "Luxembourg",
+      "region": "S",
+      "canton": "Luxembourg",
+      "domain": "fluvial",
+      "lat": 49.611567,
+      "long": 6.133836,
+      "temperature": 9.0,
+      "icon": {
+        "id": 5,
+        "name": "Overcast"
+      }
+    },
+    {
+      "id": 457,
+      "name": "Mamer",
+      "region": "S",
+      "canton": "Capellen",
+      "domain": "villes",
+      "lat": 49.628424,
+      "long": 6.025544,
+      "temperature": 9.0,
+      "icon": {
+        "id": 5,
+        "name": "Overcast"
+      }
+    }
+  ],
+  "nearestCity": null
+}

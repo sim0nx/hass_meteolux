@@ -1,0 +1,31 @@
+{
+  "licence": [
+    "Creative Commons",
+    "https://creativecommons.org/public-domain/cc0/"
+  ],
+  "docUrl": "/docs",
+  "data": [
+    {
+      "id": "sqnh",
+      "value": 1015.8
+    },
+    {
+      "id": "spsl",
+      "value": 1016.6
+    },
+    {
+      "id": "st",
+      "value": 6.5
+    },
+    {
+      "id": "su",
+      "value": 88
+    },
+    {
+      "id": "svv",
+      "value": 9999
+    }
+  ],
+  "totalItemCount": 5,
+  "timestamp": "2026-10-26T12:17:00Z"
+}
